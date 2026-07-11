@@ -35,6 +35,7 @@ RUN apt-get update \
         python3 \
         python3-pip \
         python3-venv \
+        ripgrep \
         tmux \
         unzip \
         wget \
@@ -72,6 +73,7 @@ RUN python --version \
     && jq --version \
     && fzf --version \
     && gh --version \
+    && rg --version \
     && tmux -V
 
 WORKDIR /workspace

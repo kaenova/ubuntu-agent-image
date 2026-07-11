@@ -12,6 +12,7 @@ This repository builds an Ubuntu-based development image for agents and publishe
 - `jq` for JSON processing
 - `fzf` for interactive fuzzy search
 - GitHub CLI (`gh`)
+- ripgrep (`rg`) for fast recursive search
 - tmux
 
 ## What gets published
@@ -64,6 +65,7 @@ docker run -it --rm <dockerhub-username>/ubuntu-agent-image:latest
 docker run --rm <dockerhub-username>/ubuntu-agent-image:latest jq --version
 docker run --rm <dockerhub-username>/ubuntu-agent-image:latest fzf --version
 docker run --rm <dockerhub-username>/ubuntu-agent-image:latest gh --version
+docker run --rm <dockerhub-username>/ubuntu-agent-image:latest rg --version
 ```
 
 ## Customize versions
