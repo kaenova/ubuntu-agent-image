@@ -19,12 +19,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# Base development tools, including JSON, fuzzy-search, and GitHub CLIs.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+        fzf \
+        gh \
         git \
         gnupg \
+        jq \
         less \
         locales \
         python-is-python3 \
@@ -65,6 +69,9 @@ RUN python --version \
     && bun --version \
     && uv --version \
     && dotnet --info \
+    && jq --version \
+    && fzf --version \
+    && gh --version \
     && tmux -V
 
 WORKDIR /workspace

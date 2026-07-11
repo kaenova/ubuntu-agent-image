@@ -9,6 +9,9 @@ This repository builds an Ubuntu-based development image for agents and publishe
 - Node.js
 - Bun
 - uv
+- `jq` for JSON processing
+- `fzf` for interactive fuzzy search
+- GitHub CLI (`gh`)
 - tmux
 
 ## What gets published
@@ -56,6 +59,11 @@ docker pull ghcr.io/<owner>/ubuntu-agent-image:latest
 docker pull <dockerhub-username>/ubuntu-agent-image:latest
 
 docker run -it --rm <dockerhub-username>/ubuntu-agent-image:latest
+
+# Verify the additional command-line tools
+docker run --rm <dockerhub-username>/ubuntu-agent-image:latest jq --version
+docker run --rm <dockerhub-username>/ubuntu-agent-image:latest fzf --version
+docker run --rm <dockerhub-username>/ubuntu-agent-image:latest gh --version
 ```
 
 ## Customize versions
