@@ -85,15 +85,17 @@ RUN mkdir -p "${UV_INSTALL_DIR}" \
     && ln -sf "${UV_INSTALL_DIR}/uv" /usr/local/bin/uv \
     && if [ -f "${UV_INSTALL_DIR}/uvx" ]; then ln -sf "${UV_INSTALL_DIR}/uvx" /usr/local/bin/uvx; fi
 
-# Create a dedicated non-root runtime user. The UID/GID can be aligned with the
-# host user when /home/data is provided as a bind mount. Ubuntu images may already
-# contain a group with the requested GID, so fall back to an automatically assigned
-# free GID while keeping the primary group name stable.
+# Create a dedicated non-root runtime user. /home/data is created with the
+# agent UID and group permissions so the built-in workspace is accessible to it.
+# When /home/data is bind-mounted, host-side ownership and permissions still take
+# precedence over this image-layer ownership.
 RUN if getent passwd "${AGENT_UID}" >/dev/null; then \
         echo "AGENT_UID=${AGENT_UID} is already assigned in the base image" >&2; \
         exit 1; \
     fi \
-    && if getent group "${AGENT_GID}" >/dev/null; then \
+    && if getent group agent >/dev/null; then \
+        groupmod --gid "${AGENT_GID}" agent; \
+    elif getent group "${AGENT_GID}" >/dev/null; then \
         groupadd agent; \
     else \
         groupadd --gid "${AGENT_GID}" agent; \
@@ -105,13 +107,17 @@ RUN if getent passwd "${AGENT_UID}" >/dev/null; then \
         --shell /bin/bash \
         agent \
     && mkdir -p \
-        /home/data \
         /home/agent/.local/bin \
         /home/agent/.cache/uv \
         /home/agent/.config \
         /home/agent/.npm \
         /home/agent/.local/share \
-    && chown -R agent:agent /home/agent /home/data
+    && install -d \
+        -o "${AGENT_UID}" \
+        -g agent \
+        -m 0770 \
+        /home/data \
+    && chown -R agent:agent /home/agent
 
 RUN python --version \
     && python3 --version \
