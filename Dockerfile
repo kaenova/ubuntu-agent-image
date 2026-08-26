@@ -5,8 +5,8 @@ ARG TARGETARCH
 ARG NODE_VERSION=24.18.0
 ARG BUN_INSTALL=/opt/bun
 ARG UV_INSTALL_DIR=/opt/uv
-ARG AGENT_UID=1000
-ARG AGENT_GID=1000
+ARG AGENT_UID=10001
+ARG AGENT_GID=10001
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Etc/UTC \
@@ -86,11 +86,21 @@ RUN mkdir -p "${UV_INSTALL_DIR}" \
     && if [ -f "${UV_INSTALL_DIR}/uvx" ]; then ln -sf "${UV_INSTALL_DIR}/uvx" /usr/local/bin/uvx; fi
 
 # Create a dedicated non-root runtime user. The UID/GID can be aligned with the
-# host user when /home/data is provided as a bind mount.
-RUN groupadd --gid "${AGENT_GID}" agent \
+# host user when /home/data is provided as a bind mount. Ubuntu images may already
+# contain a group with the requested GID, so fall back to an automatically assigned
+# free GID while keeping the primary group name stable.
+RUN if getent passwd "${AGENT_UID}" >/dev/null; then \
+        echo "AGENT_UID=${AGENT_UID} is already assigned in the base image" >&2; \
+        exit 1; \
+    fi \
+    && if getent group "${AGENT_GID}" >/dev/null; then \
+        groupadd agent; \
+    else \
+        groupadd --gid "${AGENT_GID}" agent; \
+    fi \
     && useradd \
         --uid "${AGENT_UID}" \
-        --gid "${AGENT_GID}" \
+        --gid agent \
         --create-home \
         --shell /bin/bash \
         agent \
