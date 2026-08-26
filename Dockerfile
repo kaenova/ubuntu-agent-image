@@ -5,6 +5,8 @@ ARG TARGETARCH
 ARG NODE_VERSION=24.18.0
 ARG BUN_INSTALL=/opt/bun
 ARG UV_INSTALL_DIR=/opt/uv
+ARG AGENT_UID=1000
+ARG AGENT_GID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Etc/UTC \
@@ -15,29 +17,50 @@ ENV DEBIAN_FRONTEND=noninteractive \
     UV_NO_MODIFY_PATH=1 \
     DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1 \
-    PATH=${BUN_INSTALL}/bin:${UV_INSTALL_DIR}:$PATH
+    HOME=/home/agent \
+    NPM_CONFIG_PREFIX=/home/agent/.local \
+    UV_CACHE_DIR=/home/agent/.cache/uv \
+    PATH=/home/agent/.local/bin:${BUN_INSTALL}/bin:${UV_INSTALL_DIR}:$PATH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Base development tools, including JSON, fuzzy-search, and GitHub CLIs.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
+        file \
+        fonts-dejavu \
+        fonts-liberation \
+        fonts-noto-core \
         fzf \
         gh \
         git \
         gnupg \
         jq \
         less \
+        libmagic1 \
         locales \
+        make \
+        nano \
+        openssh-client \
+        pandoc \
+        pdfgrep \
+        poppler-utils \
         python-is-python3 \
         python3 \
         python3-pip \
         python3-venv \
+        qpdf \
         ripgrep \
+        rsync \
+        shellcheck \
+        sqlite3 \
         tmux \
+        tree \
         unzip \
+        vim-tiny \
         wget \
         xz-utils \
         zip \
@@ -62,6 +85,24 @@ RUN mkdir -p "${UV_INSTALL_DIR}" \
     && ln -sf "${UV_INSTALL_DIR}/uv" /usr/local/bin/uv \
     && if [ -f "${UV_INSTALL_DIR}/uvx" ]; then ln -sf "${UV_INSTALL_DIR}/uvx" /usr/local/bin/uvx; fi
 
+# Create a dedicated non-root runtime user. The UID/GID can be aligned with the
+# host user when /home/data is provided as a bind mount.
+RUN groupadd --gid "${AGENT_GID}" agent \
+    && useradd \
+        --uid "${AGENT_UID}" \
+        --gid "${AGENT_GID}" \
+        --create-home \
+        --shell /bin/bash \
+        agent \
+    && mkdir -p \
+        /home/data \
+        /home/agent/.local/bin \
+        /home/agent/.cache/uv \
+        /home/agent/.config \
+        /home/agent/.npm \
+        /home/agent/.local/share \
+    && chown -R agent:agent /home/agent /home/data
+
 RUN python --version \
     && python3 --version \
     && pip3 --version \
@@ -74,8 +115,13 @@ RUN python --version \
     && fzf --version \
     && gh --version \
     && rg --version \
-    && tmux -V
+    && tmux -V \
+    && pandoc --version \
+    && pdftotext -v \
+    && qpdf --version \
+    && shellcheck --version \
+    && sqlite3 --version
 
-WORKDIR /workspace
-USER root
+WORKDIR /home/data
+USER agent
 CMD ["bash"]
