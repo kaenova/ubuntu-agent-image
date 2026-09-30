@@ -61,6 +61,8 @@ docker pull <dockerhub-username>/ubuntu-agent-image:latest
 
 docker run -it --rm <dockerhub-username>/ubuntu-agent-image:latest
 
+# Runs as root by default
+
 # Verify the additional command-line tools
 docker run --rm <dockerhub-username>/ubuntu-agent-image:latest jq --version
 docker run --rm <dockerhub-username>/ubuntu-agent-image:latest fzf --version

@@ -139,5 +139,5 @@ RUN python --version \
     && sqlite3 --version
 
 WORKDIR /home/data
-USER agent
+USER root
 CMD ["bash"]
