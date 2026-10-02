@@ -41,6 +41,7 @@ RUN apt-get update \
         jq \
         less \
         libmagic1 \
+        libreoffice-impress \
         locales \
         make \
         nano \
@@ -133,6 +134,7 @@ RUN python --version \
     && rg --version \
     && tmux -V \
     && pandoc --version \
+    && soffice --version \
     && pdftotext -v \
     && qpdf --version \
     && shellcheck --version \
